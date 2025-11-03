@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:flutter/foundation.dart';
 import '../../firebase_options.dart';
 
 class FirebaseService {
@@ -17,37 +18,50 @@ class FirebaseService {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await _requestNotificationPermissions();
+
+    // Skip messaging permissions on Linux as it's not fully supported
+    if (!kIsWeb && defaultTargetPlatform != TargetPlatform.linux) {
+      await _requestNotificationPermissions();
+    }
+
     await _setupFirestoreSettings();
   }
 
   static Future<void> _requestNotificationPermissions() async {
-    final settings = await messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
+    try {
+      final settings = await messaging.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted notification permission');
-    } else {
-      print('User declined or has not granted notification permission');
+      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+        debugPrint('User granted notification permission');
+      } else {
+        debugPrint('User declined or has not granted notification permission');
+      }
+    } catch (e) {
+      debugPrint('Error requesting notification permissions: $e');
     }
   }
 
   static Future<void> _setupFirestoreSettings() async {
-    firestore.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-    );
+    try {
+      firestore.settings = const Settings(
+        persistenceEnabled: true,
+        cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+      );
+    } catch (e) {
+      debugPrint('Error setting up Firestore settings: $e');
+    }
   }
 
   static Future<String?> getFCMToken() async {
     try {
       return await messaging.getToken();
     } catch (e) {
-      print('Error getting FCM token: $e');
+      debugPrint('Error getting FCM token: $e');
       return null;
     }
   }

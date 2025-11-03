@@ -17,7 +17,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  Map<DateTime, List<EventModel>> _eventsByDate = {};
+  final Map<DateTime, List<EventModel>> _eventsByDate = {};
 
   @override
   void initState() {
@@ -94,7 +94,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                       shape: BoxShape.circle,
                     ),
                     todayDecoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.secondary.withValues(alpha: 0.5),
                       shape: BoxShape.circle,
                     ),
                     weekendTextStyle: TextStyle(
@@ -138,7 +140,9 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                   children: [
                     Text(
                       _selectedDay != null
-                          ? DateFormat('EEEE, MMMM d, yyyy').format(_selectedDay!)
+                          ? DateFormat(
+                              'EEEE, MMMM d, yyyy',
+                            ).format(_selectedDay!)
                           : 'Select a date',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
@@ -154,18 +158,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               const Divider(),
               Expanded(
                 child: _selectedDay == null
-                    ? const Center(
-                        child: Text('Select a date to view events'),
-                      )
+                    ? const Center(child: Text('Select a date to view events'))
                     : _buildEventList(_getEventsForDay(_selectedDay!)),
               ),
             ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Text('Error loading events: $error'),
-        ),
+        error: (error, stack) =>
+            Center(child: Text('Error loading events: $error')),
       ),
     );
   }
@@ -176,11 +177,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.event_busy,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.event_busy, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No events on this day',
